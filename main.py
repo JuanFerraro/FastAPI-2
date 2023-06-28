@@ -1,8 +1,9 @@
 # Python
 from typing import Optional
+from enum import Enum
 
 # Pydantic
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 # FastAPI
 from fastapi import FastAPI, Body, Query, Path
@@ -10,6 +11,12 @@ from fastapi import FastAPI, Body, Query, Path
 app = FastAPI()
 
 # Models
+class HairColor(Enum):
+    white = "white"
+    brown = "brown"
+    black = "black"
+    blonde = "blonde"
+    red = "red"
 
 class Location(BaseModel):
     city: str
@@ -17,11 +24,11 @@ class Location(BaseModel):
     country: str
 
 class Person(BaseModel):
-    first_name: str
+    first_name: str = Field(min_length=2, max_length=30)
     last_name: str
-    age: int
-    hair_color: Optional[str] = None
-    is_married: Optional[bool] = None
+    age: int = Field(gt=0, le=100)
+    hair_color: Optional[HairColor] = Field(default=None)
+    is_married: Optional[bool] = Field (default=None)
 
 @app.get("/", tags=['home']) # Path operation decorator -> decorador, metodo get, que viene de app, qie es instancia de fastAPI
 def home(): #Patch operation function
