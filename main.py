@@ -24,11 +24,22 @@ class Location(BaseModel):
     country: str
 
 class Person(BaseModel):
-    first_name: str = Field(min_length=2, max_length=30)
+    first_name: str = Field(min_length=2, max_length=30, example="Sebastian")
     last_name: str
     age: int = Field(gt=0, le=100)
     hair_color: Optional[HairColor] = Field(default=None)
     is_married: Optional[bool] = Field (default=None)
+
+    class Config:
+        schema_extra = {
+            "example":{
+                'first_name': 'Juan',
+                'last_name': 'Barrios',
+                'age': 29,
+                'hair_color': 'black',
+                'is_maddired': False
+            }
+        }
 
 @app.get("/", tags=['home']) # Path operation decorator -> decorador, metodo get, que viene de app, qie es instancia de fastAPI
 def home(): #Patch operation function
