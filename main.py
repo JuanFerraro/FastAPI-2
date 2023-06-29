@@ -6,9 +6,10 @@ from enum import Enum
 from pydantic import BaseModel, Field, EmailStr
 
 # FastAPI
-from fastapi import FastAPI, Body, Query, Path, status, Form, Header, Cookie, UploadFile, File
+from fastapi import FastAPI, Body, Query, Path, status, Form, Header, Cookie, UploadFile, File, HTTPException
 
 app = FastAPI()
+persons = [1,2,3,4,5,6]
 
 # Models
 class HairColor(Enum):
@@ -54,6 +55,19 @@ def home(): #Patch operation function
 # Request and Response Body
 @app.post(path="/person/new",status_code=status.HTTP_201_CREATED ,tags=['person'], response_model=Person, response_model_exclude={"password"})
 def create_person(person: Person = Body()):
+    """
+    **Create Person**
+
+    This path operation creates a person in the app and save the information in the database.
+
+    **Args:**
+
+        person (Person, optional): Person model with first name, last name, age, hair color. Defaults to Body().
+
+    **Returns:**
+
+        person model: Person model with first name, last name, age, hair color
+    """
     return person
 
 # Validaciones: Query Parameters
@@ -85,6 +99,8 @@ def show_person(
             description="This is the person id. It's required"
             )
     ):
+    if person_id not in persons:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Persona no encontrada")
     return {person_id: "It exists"}
 
 # Validaciones: Request Body
@@ -104,7 +120,7 @@ def update_person(
     return results
 
 # Login (Using Forms)
-@app.post(path="/login",tags=['person'], response_model=Login, response_model_exclude={'password'}, status_code=status.HTTP_200_OK)
+@app.post(path="/login",tags=['login'], response_model=Login, response_model_exclude={'password'}, status_code=status.HTTP_200_OK)
 def login(username: str = Form(), password: str = Form()):
     return Login(username=username, password=password)
 
@@ -116,6 +132,8 @@ def contact(first_name: str = Form(max_length=20, min_length=2),second_name: str
     return user_agent
 
 #Files
-@app.post(path="/post-image", tags=['person'])
+@app.post(path="/post-image", tags=['images'])
 def post_image(image: UploadFile = File()):
     return {'filename': image.filename,'format': image.content_type,'size(Kb)': round(len(image.file.read())/ 1024, ndigits=2)}
+
+
