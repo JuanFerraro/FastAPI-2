@@ -6,7 +6,7 @@ from enum import Enum
 from pydantic import BaseModel, Field
 
 # FastAPI
-from fastapi import FastAPI, Body, Query, Path
+from fastapi import FastAPI, Body, Query, Path, status, Form
 
 app = FastAPI()
 
@@ -43,24 +43,21 @@ class Person(BaseModel):
             }
         }
 
-class PersonOut(BaseModel):
-    first_name: str = Field(min_length=2, max_length=30, example="Sebastian")
-    last_name: str
-    age: int = Field(gt=0, le=100)
-    hair_color: Optional[HairColor] = Field(default=None)
-    is_married: Optional[bool] = Field (default=None)
+class Login(BaseModel):
+    username: str = Field(min_length=3, max_length=20, example='Juan1414')
+    password: str = Field(min_length=8, max_length=20)
 
-@app.get("/", tags=['home']) # Path operation decorator -> decorador, metodo get, que viene de app, qie es instancia de fastAPI
+@app.get(path="/", tags=['home'], status_code=status.HTTP_200_OK) # Path operation decorator -> decorador, metodo get, que viene de app, qie es instancia de fastAPI
 def home(): #Patch operation function
     return {'Hola': 'Mundo'}
 
 # Request and Response Body
-@app.post("/person/new", tags=['person'], response_model=PersonOut)
+@app.post(path="/person/new",status_code=status.HTTP_201_CREATED ,tags=['person'], response_model=Person, response_model_exclude={"password"})
 def create_person(person: Person = Body()):
     return person
 
 # Validaciones: Query Parameters
-@app.get("/person/detail", tags=['person'])
+@app.get(path="/person/detail", status_code=status.HTTP_200_OK,tags=['person'])
 def show_person(
         name: Optional[str] = Query(
             None, 
@@ -80,7 +77,7 @@ def show_person(
     return {name: age}
 
 # Validaciones: Path Parameters
-@app.get("/person/detail/{person_id}", tags=['person'])
+@app.get(path="/person/detail/{person_id}", status_code=status.HTTP_200_OK,tags=['person'])
 def show_person(
         person_id: int = Path(
             gt=0,
@@ -91,7 +88,7 @@ def show_person(
     return {person_id: "It exists"}
 
 # Validaciones: Request Body
-@app.put("/person/{person_id}", tags=['person'])
+@app.put(path="/person/{person_id}", status_code=status.HTTP_200_OK,tags=['person'])
 def update_person(
     person_id: int = Path(
         title="Person ID",
@@ -106,3 +103,7 @@ def update_person(
     results.update(location.dict())
     return results
 
+# Login
+@app.post(path="/login",tags=['person'], response_model=Login, response_model_exclude={'password'}, status_code=status.HTTP_200_OK)
+def login(username: str = Form(), password: str = Form()):
+    return Login(username=username, password=password)
