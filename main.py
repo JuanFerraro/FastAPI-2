@@ -71,7 +71,7 @@ def create_person(person: Person = Body()):
     return person
 
 # Validaciones: Query Parameters
-@app.get(path="/person/detail", status_code=status.HTTP_200_OK,tags=['person'])
+@app.get(path="/person/detail", status_code=status.HTTP_200_OK,tags=['person'], deprecated=True)
 def show_person(
         name: Optional[str] = Query(
             None, 
@@ -88,6 +88,20 @@ def show_person(
             example="22"
             )
     ):
+    """**Show person**
+
+    **Args:**
+
+        name (Optional[str], optional): Person name. Defaults to Query(None, min_length=2, max_length=30)
+
+        age (str, optional): Person age. Defaults to Query()
+
+    **Returns:**
+
+    _Nombre_: _Person name_
+        
+    _Age_: _Person age_
+    """
     return {name: age}
 
 # Validaciones: Path Parameters
