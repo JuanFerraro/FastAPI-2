@@ -3,10 +3,10 @@ from typing import Optional
 from enum import Enum
 
 # Pydantic
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, EmailStr
 
 # FastAPI
-from fastapi import FastAPI, Body, Query, Path, status, Form
+from fastapi import FastAPI, Body, Query, Path, status, Form, Header, Cookie, UploadFile, File
 
 app = FastAPI()
 
@@ -103,7 +103,19 @@ def update_person(
     results.update(location.dict())
     return results
 
-# Login
+# Login (Using Forms)
 @app.post(path="/login",tags=['person'], response_model=Login, response_model_exclude={'password'}, status_code=status.HTTP_200_OK)
 def login(username: str = Form(), password: str = Form()):
     return Login(username=username, password=password)
+
+# Cookies and Headers Parameters
+@app.post(path="/contact", tags=['contact'], status_code=status.HTTP_200_OK)
+def contact(first_name: str = Form(max_length=20, min_length=2),second_name: str = Form(max_length=20, min_length=2),
+            email: EmailStr = Form(), message: str = Form(min_length=20, max_length=300),
+            user_agent: Optional[str] = Header(default=None), ads: Optional[str] = Cookie(default=None)):
+    return user_agent
+
+#Files
+@app.post(path="/post-image", tags=['person'])
+def post_image(image: UploadFile = File()):
+    return {'filename': image.filename,'format': image.content_type,'size(Kb)': round(len(image.file.read())/ 1024, ndigits=2)}
