@@ -29,6 +29,7 @@ class Person(BaseModel):
     age: int = Field(gt=0, le=100)
     hair_color: Optional[HairColor] = Field(default=None)
     is_married: Optional[bool] = Field (default=None)
+    password: str = Field(min_length=8)
 
     class Config:
         schema_extra = {
@@ -37,16 +38,24 @@ class Person(BaseModel):
                 'last_name': 'Barrios',
                 'age': 29,
                 'hair_color': 'black',
-                'is_maddired': False
+                'is_maddired': False,
+                'password': '*********'
             }
         }
+
+class PersonOut(BaseModel):
+    first_name: str = Field(min_length=2, max_length=30, example="Sebastian")
+    last_name: str
+    age: int = Field(gt=0, le=100)
+    hair_color: Optional[HairColor] = Field(default=None)
+    is_married: Optional[bool] = Field (default=None)
 
 @app.get("/", tags=['home']) # Path operation decorator -> decorador, metodo get, que viene de app, qie es instancia de fastAPI
 def home(): #Patch operation function
     return {'Hola': 'Mundo'}
 
 # Request and Response Body
-@app.post("/person/new", tags=['person'])
+@app.post("/person/new", tags=['person'], response_model=PersonOut)
 def create_person(person: Person = Body()):
     return person
 
@@ -96,3 +105,4 @@ def update_person(
     results = person.dict()
     results.update(location.dict())
     return results
+
